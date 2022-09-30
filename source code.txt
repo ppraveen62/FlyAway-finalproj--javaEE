@@ -94,3 +94,1212 @@ Home.jsp
 	</div>
 </body>
 </html>
+
+homecheck.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.to.user;
+
+/**
+ * Servlet implementation class homecheck
+ */
+public class homecheck extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public homecheck() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			
+			PrintWriter out=response.getWriter();
+			String sDate1=request.getParameter("udate");
+			String from=request.getParameter("ufrom");
+			String to=request.getParameter("uto");
+			String person=request.getParameter("uperson");
+			
+		
+		
+			
+			if(!from.equals(to) && sDate1!="") {
+				RequestDispatcher rd =request.getRequestDispatcher("flightsServlet");
+				rd.forward(request, response);
+				
+			}
+			if(from.equals(to) || sDate1=="") {
+				RequestDispatcher rd =request.getRequestDispatcher("Home.jsp");
+				rd.include(request, response);
+				out.println("<center> <span style = 'color:red'> check Inputs </span> </center>");
+			}
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+flightsServlet.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+public class flightsServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	public static String person;
+	
+
+	
+
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public flightsServlet() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			PrintWriter out =response.getWriter();
+			String sDate1=request.getParameter("udate");
+			Date date1=new SimpleDateFormat("yyyy-MM-dd").parse(sDate1);
+			String from=request.getParameter("ufrom");
+			String to=request.getParameter("uto");
+			person=request.getParameter("uperson");
+			
+			
+		
+	
+			out.println("<body style=\"background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; \">");
+			out.print("<div align=\"center\"><i><h1>FlyAway</h1></i></div><br>");
+			out.print("<div align=\"center\"><b>From : </b>"+from+"    &#8594;   <b>To : </b>"+to+"<br><br><b>Depature Date : </b>"+date1 +"</div><br>   ");
+			
+		
+			
+			
+			try {
+				
+				Class.forName("com.mysql.cj.jdbc.Driver");                                                         
+				Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root"); 
+				Statement smt=con.createStatement();
+				
+				ResultSet rs=smt.executeQuery("select * from flightdto where source=\""+from+"\" and destination=\""+to+"\";");
+				
+				out.println("<div align=\"center\"><table>");
+				out.println("<table><tr><th><u>Flight No</u></th><th>&nbsp;<u>Airline</u>	&nbsp;</th><th>	&nbsp;<u>Depature Time</u>	&nbsp;</th><th>	&nbsp;<u>Source</u>	"
+						+ "&nbsp;</th><th>	&nbsp;<u>Destination</u>	&nbsp;</th><th>	&nbsp;<u>Arrival Time</u>	&nbsp;</th><th>	&nbsp;<u>Trip Fare</u>&nbsp;</th></tr><br><br>");
+				
+				
+				while(rs.next()) {
+					
+					
+					out.println("<tr><th>"+rs.getInt(1) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(2) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(4) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(6) 
+					              +"	&nbsp;</th><th>	&nbsp;"+rs.getString(5) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(3) +"	&nbsp;</th><th>	&nbsp;"+rs.getDouble(7) 
+					              		+ "&nbsp;</th><th>&nbsp;&nbsp;&nbsp;&nbsp; "
+					              		+ "<form action=\"flightsServlet2\" method =\"post\"><input type=\"hidden\" id=\"flightId\" name=\"flightId\" value=\""+rs.getString(1)+"\">"
+					              				+ "<input type=\"submit\" value=\"BOOK NOW\" ></form>"
+					              		+ "</th></tr>");
+
+				}
+				out.println("</table></div>");
+			
+				
+				
+				smt.close();
+				con.close();
+				
+			}
+			catch (Exception e){
+				System.out.println(e);
+				
+			}
+
+	
+					
+		
+				
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			
+			}
+		
+		
+		
+	
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+flightsServlet2.java
+
+package com;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class flightsServlet2
+ */
+public class flightsServlet2 extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	public static String flightId;   
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public flightsServlet2() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		flightId=request.getParameter("flightId");
+		RequestDispatcher rd =request.getRequestDispatcher("userDetails.jsp");
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+userDetails.jsp
+
+<%@page import="org.hibernate.internal.build.AllowSysOut"%>
+<%@page import="com.flightsServlet"%>
+<%@page import="com.flightsServlet2"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>user</title>
+</head>
+<body style="background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; ">
+
+	
+	<%	
+		
+		String flightno=flightsServlet2.flightId;	
+		int nop=Integer.parseInt(flightsServlet.person);
+		String person=String.valueOf(nop);
+		int i=1;
+	
+	%>
+	
+	<div align="center">
+		<i><h1>FlyAway</h1></i>
+		<h3>Enter Details</h3>
+		<form action="userdetailsverify" method ="post"><br>
+		
+		<% for(i=1;i<=nop;i++) { %>
+			<label><b>Person <%=i %></b></label>
+			<table>
+			<tr>
+			<td><b>Name</b></td>
+			<td><input type ="text" name="uname<%=i%>"  ></td>
+			</tr>
+			<tr>
+			<td><b>Gender</b></td>
+			<td><select  name="ugender<%=i%>">
+                 <option value="Male">Male</option>
+                 <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                 </select></td>
+			</tr>
+			<tr>
+				<td><b>Age</b></td>
+				<td><input type ="number" name="uage<%=i%>" min=1 max=100 value=1></td>
+			</tr>
+			<tr>
+				<td><b>Email Id</b></td>
+				<td><input type="email" name="uemail<%=i%>" ></td>
+			</tr>
+			<tr>
+				<td><b>Mobile no</b></td>
+				<td><input type="tel" name="umobile<%=i%>"></td>
+			</tr>
+			</table>
+		
+		
+		<%} %>
+			
+			<br><input type ="submit" name="add" value="continue">
+		</form>
+		
+		
+	</div>
+		
+	
+
+
+</body>
+</html>
+
+userdetailsverify.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+/**
+ * Servlet implementation class userdetailsverify
+ */
+public class userdetailsverify extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public userdetailsverify() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		int nop=Integer.parseInt(flightsServlet.person);
+		int i=1;
+		int verify=0;
+		
+		PrintWriter out =response.getWriter();
+		
+		for(i=1;i<=nop;i++) {
+			String name=request.getParameter("uname"+String.valueOf(i));
+			String email=request.getParameter("uemail"+String.valueOf(i));
+			String number=request.getParameter("umobile"+String.valueOf(i));
+			if (number=="") {
+				number = "0";
+			}
+			Long mobile=Long.parseLong(number);
+			
+			if(name!="" && email!=null && mobile!=0) {
+				verify+=1;
+			
+			}
+		}
+		
+		RequestDispatcher rd =null;
+
+		if(verify==nop){
+			
+			rd =request.getRequestDispatcher("book");
+			rd.forward(request, response);	
+		}
+		else {
+			
+			rd =request.getRequestDispatcher("userDetails.jsp");
+			rd.include(request, response);
+			out.println("<br><b><center> <span style = 'color:red'>Hello user! please enter details of person correctly.  </span> </center></b>");
+		}
+		
+		
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+book.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+
+import java.sql.Statement;
+import java.util.Random;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+
+/**
+ * Servlet implementation class book
+ */
+public class book extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	public static String price;
+	public static int  ran;  
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public book() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		PrintWriter out =response.getWriter();
+		int flightno=Integer.parseInt(flightsServlet2.flightId);
+		int person1=Integer.parseInt(flightsServlet.person);
+		
+		Random rand=new Random(); 
+		ran=rand.nextInt(120001 ,122000);
+		
+		
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");                                                         
+			Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root"); 
+			Statement smt=con.createStatement();
+			ResultSet rs=smt.executeQuery("select * from flightdto;");
+			while(rs.next()) {
+							
+				if (rs.getInt(1)==flightno) {
+					
+					double amount= Double.parseDouble(rs.getString(7))*person1;
+					price=String.valueOf(amount);
+					
+					out.println("<body style=\"background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; \">");
+					out.print("<div align=\"center\"><i><h1>FlyAway</h1></i></div><br>");
+					out.print("<div align=\"center\"><b>From : </b>"+rs.getString(6)+"   &#8594;   <b>To : </b>"+rs.getString(5)+"<br><br></div><br>   ");
+					out.println("<div align=\"center\"><table>");
+					out.println("<tr><th><b>Flight No :</b>"+rs.getInt(1) +"&nbsp;</th><th>	&nbsp;<b>Departure Time :</b>"+rs.getString(4) +"&nbsp;</th><th>&nbsp;<b>Arrival Time :</b>"+rs.getString(3) +"</th></tr>");
+					out.print("<div align=\"center\"><b>Price : Rs </b>"+rs.getString(7)+"/-"+"</div><br>   ");
+					out.print("<div align=\"center\"><b>No of Person : </b>"+person1+"</div><br>   ");	
+					out.print("<div align=\"center\"><b>Total Price : Rs </b>"+amount+"/-"+"</div><br>   ");
+					out.println("</table><br>");
+					out.println("<form action=\"payment.jsp\"  ><input type=\"submit\" value=\"Conifrm\" ></form></div>");
+					
+					
+					
+					
+					
+				}
+			}
+			smt.close();
+			con.close();
+			
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+	
+		}
+		}
+	
+		
+		
+
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+payment.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@page import="java.util.*" %>
+<%@page import="com.book" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Payment GateWay</title>
+</head>
+<body style="background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; ">>
+	<%
+		
+		String amount=book.price;
+	  
+	
+	%>
+
+
+	<div align="center">
+		<i><h1>FlyAway</h1></i><br>
+		<h2>FlyPay</h2>
+		<i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		( A Secure Payment Gateway.)</i>
+		<form action="paymentcheck" method ="post"><br> 
+			<table>
+				<tr>
+					<td><b>Company</b></td><td>&nbsp;&nbsp;&nbsp;Flyaway</td>
+				</tr>
+				<tr>
+					<td><b>Order Number</b></td><td>&nbsp;&nbsp;&nbsp;<%=book.ran %></td>
+				</tr>
+				<tr>
+					<td><b>Total Amount </b>Rs</td><td>&nbsp;&nbsp;&nbsp;<%=amount %> /-</td>
+				</tr>
+			</table><br>
+			<h3>Card Payment</h3>
+			<table>
+				
+				<tr>
+					<td><b>Card Number</b></td><td><input type ="number" name="cardno"></td>
+				</tr>
+				<tr>
+					<td><b>Expiry Date</b></td><td><input type="month" name="month"  min="2022" max="2100"></td>
+				</tr>
+				<tr>
+					<td><b>Password </b></td><td><input type ="password" name="psd"></td>
+				</tr>
+			</table><br>
+			<input type="submit" value="Pay"><br><br>
+			
+			
+			<input type="hidden" id ="order" name="order" value=<%=book.ran %>>
+			<input type="hidden" id ="amt" name="amt" value=<%=amount %>>
+			
+		
+		</form>
+	</div>
+</body>
+</html>
+
+paymentcheck.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class paymentcheck
+ */
+public class paymentcheck extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	public static String amount;
+	public static String id;
+	
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public paymentcheck() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		 
+		 PrintWriter out =response.getWriter();
+		 String cardnum=request.getParameter("cardno");
+		 String month=request.getParameter("month");
+		 String pswrd=request.getParameter("psd");
+		 if (cardnum=="") {
+				cardnum = "0";
+			}
+		 Long cardno=Long.parseLong(cardnum);
+		 
+		 RequestDispatcher rd =null;
+		if(cardno!=0 && month!="" && pswrd!="") {
+			 amount=request.getParameter("amt");
+			 id=request.getParameter("order");
+			 
+			 
+			 rd =request.getRequestDispatcher("paid.jsp");
+			 rd.forward(request, response);
+		}
+		else {
+			rd =request.getRequestDispatcher("payment.jsp");
+			rd.include(request, response);
+			out.println("<br><b><center> <span style = 'color:red'>Hello user! Card details entered is wrong . </span> </center></b>");
+			
+		}
+		 
+		 
+		 
+		 
+		 
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+paid.jsp
+
+
+<%@page import="java.util.Random"%>
+<%@page import="com.paymentcheck"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Booking confirm</title>
+</head>
+<body style="background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; ">
+
+<%
+   String amount=paymentcheck.amount;
+   String id=paymentcheck.id;
+   Random rand=new Random(); 
+	int tid=rand.nextInt(580009999,990009999);
+
+
+%>
+	<div align="center">
+		<i><h1>   &#9989; Payment Successful !</h1><br></i>
+		<h3>Thank you! Your Booking has been confirmed.</h3><br><br>
+		Booking ID :&nbsp;<%=id %> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Transaction ID :&nbsp;<%=tid %> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		Total Amount Paid :&nbsp;<%=amount %> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<br>
+		<br>
+		<i><h4>Your booking details have been sent to your mail.</h3><i></i><br><br>
+		<form action="Home.jsp"><input type="submit" value="Done"></form><br>
+	</div>
+</body>
+</html>
+
+
+for admin
+
+AdminLogin.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login verify</title>
+</head>
+<body style="background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; ">
+	<div align="center">
+		<i><h1>FlyAway</h1></i>
+		<form action="adminVerify" method ="post"><br>
+			<table>
+			<tr>
+			<td><b>Email Id</b></td>
+			<td><input type ="text" name="emailid" ></td>
+			</tr>
+			<tr>
+			<td><b>Password</b></td>
+			<td><input type ="password" name="pswrd"><br></td>
+			</tr>
+			</table><br>
+			<input type="submit" value="login">
+			
+		</form>
+		
+	</div>
+	
+
+
+
+</body>
+</html>
+
+
+adminVerify.java
+
+package com;
+
+import java.io.IOException;
+import java.sql.*;
+import java.io.PrintWriter;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class adminVerify
+ */
+public class adminVerify extends HttpServlet {
+
+	private static final long serialVersionUID = 1L;
+
+	private String psd;
+	private String eml;
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public adminVerify() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		// TODO Auto-generated method stub
+
+		String email=request.getParameter("emailid");
+	
+		String Password=request.getParameter("pswrd");
+	
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");                                                          
+			Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root");
+			Statement smt=con.createStatement();
+			ResultSet rs=smt.executeQuery("select * from admin");
+			
+			while(rs.next()) {
+				
+				if (rs.getString(1).equals(email)) {
+					eml=rs.getString(1);
+					psd=rs.getString(2);	
+					}
+				}
+		
+			
+		
+			RequestDispatcher rd = null;
+			if(Password.equals(psd)&& email.equals(eml)) {
+				rd=request.getRequestDispatcher("adminHome");
+				rd.forward(request, response);
+			}
+			else {
+				rd=request.getRequestDispatcher("AdminLogin.jsp");
+				PrintWriter writer=response.getWriter();
+				rd.include(request, response);
+				writer.println(("<center> <span style = 'color:red'> Invalid Credentials </span> </center>"));
+			}
+
+
+		}
+		catch (Exception e){
+			System.out.println(e);
+
+		}
+
+
+
+
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+adminHome.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class adminHome
+ */
+public class adminHome extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public adminHome() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		PrintWriter out=response.getWriter();
+		out.println("<body style=\"background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; \">");
+		out.println("<div align=\"center\"><i><h1>FlyAway</h1></i></div><br><br>");
+		out.println("<h3> welcome to your Dashbaord </h3><br>");
+		
+		
+		out.println("<b><a href='changepassword.jsp'>Change password</a></b><br>");
+		out.println("<b><a href='listsourcedestination'>List of Source and Destination</a></b><br>");
+		out.println("<b><a href='listairlines'>List of Airlines </a></b><br>");
+		out.println("<b><a href='listflights'>List of Flights</a><br></b><br>");
+		out.println("<b><a href='flightsmod'>Flights Trip Details Modification</a><br></b><br><br>");
+		out.println("<b><a href='Home.jsp'>Logout</a><br>");	
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+changepassword.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Change Password</title>
+</head>
+<body style="background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; ">
+	<div align="center">
+		<i><h1>FlyAway</h1></i>
+		<form action="changepswrd" method ="post"><br>
+			<table>
+			<tr>
+			<td><b>Enter New password</b></td><td><input type ="Password" name="upswrd" ></td>
+			</tr>
+			</table>
+			<input type="submit" name="update"  value="Change Password">
+			
+		</form>
+		</div>
+
+</body>
+</html>
+
+changepswrd.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.*;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+/**
+ * Servlet implementation class changepswrd
+ */
+public class changepswrd extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public changepswrd() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String psd =request.getParameter("upswrd");
+		
+		PrintWriter out=response.getWriter();
+		if (psd!="") {
+			try {
+				
+				Class.forName("com.mysql.cj.jdbc.Driver");                                                         
+				Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root"); 
+				PreparedStatement smt =con.prepareStatement("update admin set Password=? where EmailId=?");  //updating db
+				
+				smt.setString(1,psd);
+				smt.setString(2,"admin@flyaway.com");
+				smt.execute();
+				
+			}
+			catch (Exception e){
+				System.out.println(e);
+				
+			}
+			
+			
+			
+			RequestDispatcher rd =request.getRequestDispatcher("AdminLogin.jsp");
+			rd.include(request, response);
+			out.println("<center> <span style = 'color:green'> password changed sucessfully </span> </center>");
+			
+		}
+		
+		if (psd=="") {
+			
+			RequestDispatcher rd =request.getRequestDispatcher("changepassword.jsp");
+			rd.include(request, response);
+			out.println("<center> <span style = 'color:red'> Missing Inputs </span> </center>");	
+			
+		}
+		
+			
+		
+	}
+
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+
+listsourcedestination.java
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.*;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+
+/**
+ * Servlet implementation class listsourcedestination
+ */
+public class listsourcedestination extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public listsourcedestination() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		PrintWriter out=response.getWriter();
+		out.println("<body style=\"background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; \">");
+		out.println("<div align=\"center\"><i><h1>FlyAway</h1></i></div><br><br>");
+		out.println("<br><br><b><a href='adminHome'>Dashboard</a></b><br><br>");
+		out.println("<h3>List of Sources and Destination  </h3>");
+		out.println("<table><tr><th><u>Source</u>	&nbsp;</th><th>	&nbsp;<u>Destination</u></th></tr><br>");
+		try {
+					
+					Class.forName("com.mysql.cj.jdbc.Driver");                                                         
+					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root"); 
+					Statement smt=con.createStatement();
+					ResultSet rs=smt.executeQuery("select distinct source,destination from flightdto");
+					
+					while(rs.next()) {
+						out.println("<th>"+rs.getString(1) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(2) +"</th></tr>");
+						
+					}
+					out.println("</table>");
+					smt.close();
+					con.close();
+					
+				}
+				catch (Exception e){
+					System.out.println(e);
+					
+				}
+		
+		
+		
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+listflights.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class listflights
+ */
+public class listflights extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public listflights() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		PrintWriter out=response.getWriter();
+		out.println("<body style=\"background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; \">");
+		out.println("<div align=\"center\"><i><h1>FlyAway</h1></i></div><br><br>");
+		out.println("<br><br><b><a href='adminHome'>Dashboard</a></b><br><br>");
+		out.println("<h3>List of Flights  </h3>");
+		out.println("<table><tr><th><u>Flight No</u></th><th><u>Airline</u>	&nbsp;</th><th>	&nbsp;<u>Depature Time</u>	&nbsp;</th><th>	"
+				+ "&nbsp;<u>Source</u>	&nbsp;</th><th>	&nbsp;<u>Destination</u>	&nbsp;</th><th>	&nbsp;<u>Arrival Time</u>	&nbsp;</th><th>	&nbsp;<u>Trip Fare</u></th></tr><br>");
+		try {
+					
+					Class.forName("com.mysql.cj.jdbc.Driver");                                                         
+					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root"); 
+					Statement smt=con.createStatement();
+					ResultSet rs=smt.executeQuery("select * from flightdto");
+					
+					while(rs.next()) {
+						out.println("<tr><th>"+rs.getInt(1) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(2) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(4) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(6) 
+						                      +"	&nbsp;</th><th>	&nbsp;"+rs.getString(5) +"	&nbsp;</th><th>	&nbsp;"+rs.getString(3) +"	&nbsp;</th><th>	&nbsp;"+rs.getDouble(7) +"</th></tr>");
+						
+					}
+					out.println("</table><br>");
+					smt.close();
+					con.close();
+					
+				}
+				catch (Exception e){
+					System.out.println(e);
+					
+				}
+		
+		
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+listairlines.java
+
+package com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class listairlines
+ */
+public class listairlines extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public listairlines() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		PrintWriter out=response.getWriter();
+		out.println("<body style=\"background:url(pic2.jpg.jpg)  no-repeat;background-size:100% auto; \">");
+		out.println("<div align=\"center\"><i><h1>FlyAway</h1></i></div><br><br>");
+		out.println("<br><br><b><a href='adminHome'>Dashboard</a></b><br><br>");
+		out.println("<h3>List of Airlines  </h3>");
+		out.println("<table><tr><th><u>Airline</u></th></tr><br>");
+		try {
+					
+					Class.forName("com.mysql.cj.jdbc.Driver");                                                         
+					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root","root"); 
+					Statement smt=con.createStatement();
+					ResultSet rs=smt.executeQuery("select distinct airline from flightdto");
+					
+					while(rs.next()) {
+						out.println("<th>"+rs.getString(1)+"</th></tr>");
+						
+					}
+					out.println("</table>");
+					smt.close();
+					con.close();
+					
+				}
+				catch (Exception e){
+					System.out.println(e);
+					
+				}
+		
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
+}
+
+
+
+
+
+
+
+
+
+

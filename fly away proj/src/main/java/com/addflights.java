@@ -76,8 +76,6 @@ public class addflights extends HttpServlet {
 				trx.commit();
 				session.close();
 				
-				System.out.println("completed");
-				
 			}
 			catch (Exception e){
 				e.printStackTrace();
